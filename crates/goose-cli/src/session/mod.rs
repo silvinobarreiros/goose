@@ -106,6 +106,7 @@ enum StreamEvent {
         error: String,
     },
     Complete {
+        session_id: String,
         total_tokens: Option<i32>,
         #[serde(skip_serializing_if = "Option::is_none")]
         input_tokens: Option<i32>,
@@ -1585,6 +1586,7 @@ impl CliSession {
                 None => (None, None, None, None, None, None),
             };
             emit_stream_event(&StreamEvent::Complete {
+                session_id: self.session_id.clone(),
                 total_tokens,
                 input_tokens,
                 output_tokens,
