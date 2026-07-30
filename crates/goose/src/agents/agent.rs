@@ -1912,7 +1912,9 @@ impl Agent {
                     Ok(compaction) => {
                         let compacted_conversation = compaction.conversation;
                         session_manager.replace_conversation(&session_config.id, &compacted_conversation).await?;
-                        self.update_session_metrics(&session_config.id, session_config.schedule_id.clone(), &compaction.usage, Some(compaction.retained_context_tokens)).await?;
+                        let compaction_usage = self.update_session_metrics(&session_config.id, session_config.schedule_id.clone(), &compaction.usage, Some(compaction.retained_context_tokens)).await?;
+
+                        yield AgentEvent::Usage(compaction_usage);
 
                         yield AgentEvent::HistoryReplaced(compacted_conversation.clone());
 
@@ -2716,9 +2718,10 @@ impl Agent {
                             {
                                 Ok(compaction) => {
                                     session_manager.replace_conversation(&session_config.id, &compaction.conversation).await?;
-                                    self.update_session_metrics(&session_config.id, session_config.schedule_id.clone(), &compaction.usage, Some(compaction.retained_context_tokens)).await?;
+                                    let compaction_usage = self.update_session_metrics(&session_config.id, session_config.schedule_id.clone(), &compaction.usage, Some(compaction.retained_context_tokens)).await?;
                                     conversation = compaction.conversation;
                                     did_recovery_compact_this_iteration = true;
+                                    yield AgentEvent::Usage(compaction_usage);
                                     yield AgentEvent::HistoryReplaced(conversation.clone());
                                     break;
                                 }
