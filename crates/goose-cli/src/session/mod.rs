@@ -105,6 +105,15 @@ enum StreamEvent {
     Error {
         error: String,
     },
+    Usage {
+        model: String,
+        input_tokens: Option<i32>,
+        output_tokens: Option<i32>,
+        total_tokens: Option<i32>,
+        cache_read_input_tokens: Option<i32>,
+        cache_write_input_tokens: Option<i32>,
+        cost_usd: Option<f64>,
+    },
     Complete {
         session_id: String,
         total_tokens: Option<i32>,
@@ -1477,6 +1486,17 @@ impl CliSession {
                             }
                         }
                         Some(Ok(AgentEvent::Usage(usage))) => {
+                            if is_stream_json_mode {
+                                emit_stream_event(&StreamEvent::Usage {
+                                    model: usage.model.clone(),
+                                    input_tokens: usage.usage.input_tokens,
+                                    output_tokens: usage.usage.output_tokens,
+                                    total_tokens: usage.usage.total_tokens,
+                                    cache_read_input_tokens: usage.usage.cache_read_input_tokens,
+                                    cache_write_input_tokens: usage.usage.cache_write_input_tokens,
+                                    cost_usd: usage.cost,
+                                });
+                            }
                             last_usage = Some(usage);
                         }
                         Some(Ok(AgentEvent::MessageUsage { .. })) => {}
